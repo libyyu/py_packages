@@ -36,7 +36,7 @@ from .exceptions import (
     SystemTimeWarning,
 )
 
-from ssl_match_hostname import CertificateError
+from ssl_match_hostname import CertificateError, match_hostname
 
 from .util.ssl_ import (
     resolve_cert_reqs,
