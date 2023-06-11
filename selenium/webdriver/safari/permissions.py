@@ -15,36 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-
-KEY = "key"
-POINTER = "pointer"
-NONE = "none"
-SOURCE_TYPES = set([KEY, POINTER, NONE])
-
-POINTER_MOUSE = "mouse"
-POINTER_TOUCH = "touch"
-POINTER_PEN = "pen"
-
-POINTER_KINDS = set([POINTER_MOUSE, POINTER_TOUCH, POINTER_PEN])
+"""
+The Permission implementation.
+"""
 
 
-class Interaction(object):
+class Permission(object):
+    """
+    Set of supported permissions.
+    """
 
-    PAUSE = "pause"
-
-    def __init__(self, source):
-        self.source = source
-
-
-class Pause(Interaction):
-
-    def __init__(self, source, duration=0):
-        super(Interaction, self).__init__()
-        self.source = source
-        self.duration = duration
-
-    def encode(self):
-        return {
-            "type": self.PAUSE,
-            "duration": int(self.duration * 1000)
-        }
+    GET_USER_MEDIA = "getUserMedia"

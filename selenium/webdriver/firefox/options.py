@@ -14,7 +14,10 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import warnings
+
 from selenium.common.exceptions import InvalidArgumentException
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.proxy import Proxy
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
@@ -38,12 +41,13 @@ class Options(object):
         self._preferences = {}
         self._profile = None
         self._proxy = None
+        self._caps = DesiredCapabilities.FIREFOX.copy()
         self._arguments = []
         self.log = Log()
 
     @property
     def binary(self):
-        """Returns the location of the binary."""
+        """Returns the FirefoxBinary instance"""
         return self._binary
 
     @binary.setter
@@ -58,11 +62,29 @@ class Options(object):
 
     @property
     def binary_location(self):
-        return self.binary
+        """Returns the location of the binary."""
+        return self.binary._start_cmd
 
-    @binary.setter  # noqa
+    @binary_location.setter  # noqa
     def binary_location(self, value):
+        """ Sets the location of the browser binary by string """
         self.binary = value
+
+    @property
+    def accept_insecure_certs(self):
+        return self._caps.get('acceptInsecureCerts')
+
+    @accept_insecure_certs.setter
+    def accept_insecure_certs(self, value):
+        self._caps['acceptInsecureCerts'] = value
+
+    @property
+    def capabilities(self):
+        return self._caps
+
+    def set_capability(self, name, value):
+        """Sets a capability."""
+        self._caps[name] = value
 
     @property
     def preferences(self):
@@ -110,6 +132,32 @@ class Options(object):
             raise ValueError()
         self._arguments.append(argument)
 
+    @property
+    def headless(self):
+        """
+        Returns whether or not the headless argument is set
+        """
+        return '-headless' in self._arguments
+
+    @headless.setter
+    def headless(self, value):
+        """
+        Sets the headless argument
+
+        Args:
+          value: boolean value indicating to set the headless option
+        """
+        if value is True:
+            self._arguments.append('-headless')
+        elif '-headless' in self._arguments:
+            self._arguments.remove('-headless')
+
+    def set_headless(self, headless=True):
+        """ Deprecated, options.headless = True """
+        warnings.warn('use setter for headless property instead of set_headless',
+                      DeprecationWarning, stacklevel=2)
+        self.headless = headless
+
     def to_capabilities(self):
         """Marshals the Firefox options to a `moz:firefoxOptions`
         object.
@@ -119,6 +167,7 @@ class Options(object):
         # so if a binary or profile has _not_ been set,
         # it will defer to geckodriver to find the system Firefox
         # and generate a fresh profile.
+        caps = self._caps
         opts = {}
 
         if self._binary is not None:
@@ -135,5 +184,6 @@ class Options(object):
         opts.update(self.log.to_capabilities())
 
         if len(opts) > 0:
-            return {Options.KEY: opts}
-        return {}
+            caps[Options.KEY] = opts
+
+        return caps

@@ -15,14 +15,28 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from selenium.webdriver.remote.remote_connection import RemoteConnection
+from selenium.webdriver.common import service
 
 
-class ChromeRemoteConnection(RemoteConnection):
+class Service(service.Service):
+    """
+    Object that manages the starting and stopping of the WebKitGTKDriver
+    """
 
-    def __init__(self, remote_server_addr, keep_alive=True):
-        RemoteConnection.__init__(self, remote_server_addr, keep_alive)
-        self._commands["launchApp"] = ('POST', '/session/$sessionId/chromium/launch_app')
-        self._commands["setNetworkConditions"] = ('POST', '/session/$sessionId/chromium/network_conditions')
-        self._commands["getNetworkConditions"] = ('GET', '/session/$sessionId/chromium/network_conditions')
-        self._commands['executeCdpCommand'] = ('POST', '/session/$sessionId/goog/cdp/execute')
+    def __init__(self, executable_path, port=0, log_path=None):
+        """
+        Creates a new instance of the Service
+
+        :Args:
+         - executable_path : Path to the WebKitGTKDriver
+         - port : Port the service is running on
+         - log_path : Path for the WebKitGTKDriver service to log to
+        """
+        log_file = open(log_path, "wb") if log_path is not None and log_path != "" else None
+        service.Service.__init__(self, executable_path, port, log_file)
+
+    def command_line_args(self):
+        return ["-p", "%d" % self.port]
+
+    def send_remote_shutdown_command(self):
+        pass

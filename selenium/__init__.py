@@ -15,5 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
+
+__version__ = "3.141.0"
 from . import plugins
-__version__ = "3.4.1"
