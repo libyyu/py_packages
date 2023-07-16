@@ -714,7 +714,10 @@ class DB:
                     yield storage(dict(zip(names, row)))
                     row = db_cursor.fetchone()
             out = iterbetter(iterwrapper())
-            out.__len__ = lambda: int(db_cursor.rowcount)
+            if hasattr(db_cursor, 'arraysize'):
+                out.__len__ = lambda: int(db_cursor.arraysize)
+            else:
+                out.__len__ = lambda: int(db_cursor.rowcount)
             out.list = lambda: [storage(dict(zip(names, x))) \
                                for x in db_cursor.fetchall()]
         else:
@@ -976,6 +979,20 @@ class DB:
         """Start a transaction."""
         return Transaction(self.ctx)
     
+    def execute(self, sql, **vars):
+        try:
+            db_cursor = self._db_cursor()
+            if vars is None: vars = {}
+            sql_query = reparam(sql, vars)
+            result = self._db_execute(db_cursor, sql_query)
+            if not self.ctx.transactions: 
+                self.ctx.commit()
+            return result
+        except Exception as e:
+            import logging
+            logging.error("Error execute for %s",  str(reparam(sql, vars or {})))
+            raise e
+    
     def has_table(self, table):
         out = self.query("SHOW TABLES LIKE '%s';" % table)
         if not out: return False
@@ -1118,8 +1135,8 @@ class SqliteDB(DB):
     
     def query(self, sql_query, vars=None, processed=False, _test=False): 
         out = DB.query(self, sql_query, vars=vars, processed=processed, _test=_test)
-        if isinstance(out, iterbetter):
-            del out.__len__
+        # if isinstance(out, iterbetter):
+        #     del out.__len__
         return out
     
     def has_table(self, table):
