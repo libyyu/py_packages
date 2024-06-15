@@ -51,6 +51,22 @@ except:
     debug = sys.stderr
     config = storage()
 
+try:
+    from flib import import_driver
+except:
+    def import_driver(drivers, preferred=None):
+        """Import the first available driver or preferred driver.
+        """
+        if preferred:
+            drivers = [preferred]
+
+        for d in drivers:
+            try:
+                return __import__(d, None, None, ['x'])
+            except ImportError:
+                pass
+        raise ImportError("Unable to import " + " or ".join(drivers))
+
 class UnknownDB(Exception):
     """raised for unsupported dbms"""
     pass
@@ -1088,19 +1104,6 @@ class MySQLDB(DB):
         
     def _get_insert_default_values_query(self, table):
         return "INSERT INTO %s () VALUES()" % table
-
-def import_driver(drivers, preferred=None):
-    """Import the first available driver or preferred driver.
-    """
-    if preferred:
-        drivers = [preferred]
-
-    for d in drivers:
-        try:
-            return __import__(d, None, None, ['x'])
-        except ImportError:
-            pass
-    raise ImportError("Unable to import " + " or ".join(drivers))
 
 class SqliteDB(DB): 
     def __init__(self, **keywords):
