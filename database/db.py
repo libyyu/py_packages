@@ -731,9 +731,12 @@ class DB:
                     row = db_cursor.fetchone()
             out = iterbetter(iterwrapper())
             if hasattr(db_cursor, 'arraysize'):
-                out.__len__ = lambda: int(db_cursor.arraysize)
+                rowcount = int(db_cursor.arraysize)
             else:
-                out.__len__ = lambda: int(db_cursor.rowcount)
+                rowcount = int(db_cursor.rowcount)
+            newCls = type("TempIterBetter", (out.__class__,), {'__len__': lambda out: rowcount})
+            out.__class__ = newCls
+            
             out.list = lambda: [storage(dict(zip(names, x))) \
                                for x in db_cursor.fetchall()]
         else:
