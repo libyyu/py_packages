@@ -730,12 +730,15 @@ class DB:
                     yield storage(dict(zip(names, row)))
                     row = db_cursor.fetchone()
             out = iterbetter(iterwrapper())
-            if hasattr(db_cursor, 'arraysize'):
+            if hasattr(db_cursor, 'rowcount'):
+                rowcount = int(db_cursor.rowcount)
+            elif hasattr(db_cursor, 'arraysize'):
                 rowcount = int(db_cursor.arraysize)
             else:
-                rowcount = int(db_cursor.rowcount)
-            newCls = type("TempIterBetter", (out.__class__,), {'__len__': lambda out: rowcount})
-            out.__class__ = newCls
+                rowcount = 0
+            if sys.version_info > (3, 0):
+                newCls = type("TempIterBetter", (out.__class__,), {'__len__': lambda out: rowcount})
+                out.__class__ = newCls
             
             out.list = lambda: [storage(dict(zip(names, x))) \
                                for x in db_cursor.fetchall()]
@@ -1087,9 +1090,14 @@ class PostgresDB(DB):
 
 class MySQLDB(DB): 
     def __init__(self, **keywords):
-        import MySQLdb as db
+        try:
+            import MySQLdb as db
+            pwdKey = 'passwd'
+        except:
+            import pymysql as db
+            pwdKey = 'password'
         if 'pw' in keywords:
-            keywords['passwd'] = keywords['pw']
+            keywords[pwdKey] = keywords['pw']
             del keywords['pw']
 
         if 'charset' not in keywords:

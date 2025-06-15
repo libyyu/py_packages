@@ -356,7 +356,7 @@ class EnumMeta(type):
         """
         return True
 
-    def __call__(cls, value, names=None, *, module=None, qualname=None, type=None, start=1):
+    def __call__(cls, value, names=None, module=None, qualname=None, type=None, start=1):
         """
         Either returns an existing member, or creates a new enum class.
 
@@ -434,7 +434,7 @@ class EnumMeta(type):
         try:
             return cls._member_map_[name]
         except KeyError:
-            raise AttributeError(name) from None
+            raise AttributeError(name)
 
     def __getitem__(cls, name):
         return cls._member_map_[name]
@@ -480,7 +480,7 @@ class EnumMeta(type):
             raise AttributeError('Cannot reassign members.')
         super().__setattr__(name, value)
 
-    def _create_(cls, class_name, names, *, module=None, qualname=None, type=None, start=1):
+    def _create_(cls, class_name, names, module=None, qualname=None, type=None, start=1):
         """
         Convenience method to create a new Enum class.
 
@@ -669,7 +669,7 @@ class EnumMeta(type):
         return __new__, save_new, use_args
 
 
-class Enum(metaclass=EnumMeta):
+class Enum(EnumMeta):
     """
     Generic enumeration.
 
@@ -832,7 +832,7 @@ class Flag(Enum):
                 high_bit = _high_bit(last_value)
                 break
             except Exception:
-                raise TypeError('Invalid Flag value: %r' % last_value) from None
+                raise TypeError('Invalid Flag value: %r' % last_value)
         return 2 ** (high_bit+1)
 
     @classmethod
