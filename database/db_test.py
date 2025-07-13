@@ -123,7 +123,7 @@ def test_sqlite():
 
 def test_mysql():
     #api = DB(dbn='mysql', db='fn2018', user='root', passwd='199010', host='localhost', charset='utf8')
-    api = db.database(dbn='mysql', db='fn2018', user='root', passwd='199010', host='localhost', charset='utf8')
+    api = db.database(dbn='mysql', db='fn2018', user='root', passwd='happy2010', host='localhost', charset='utf8')
 
     print (api.has_database('fn2018'))
     print (api.has_table("tb_user"))

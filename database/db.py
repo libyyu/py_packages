@@ -736,6 +736,7 @@ class DB:
                 rowcount = int(db_cursor.arraysize)
             else:
                 rowcount = 0
+            rowcount = 0 if rowcount < 0 else rowcount
             if sys.version_info > (3, 0):
                 newCls = type("TempIterBetter", (out.__class__,), {'__len__': lambda out: rowcount})
                 out.__class__ = newCls
